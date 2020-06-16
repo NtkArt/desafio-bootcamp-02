@@ -32,7 +32,7 @@ app.post("/repositories", (request, response) => {
     id: uuid(),
     title,
     url,
-    techs: [techs],
+    techs,
     likes: 0,
   };
 
@@ -49,10 +49,6 @@ app.put("/repositories/:id", (request, response) => {
     (repository) => repository.id === id
   );
 
-  const oldRepositoryData = repositories.find(
-    (repository) => repository.id === id
-  );
-
   if (repositoryIndex < 0)
     return response.status(400).json({ error: "Project not found" });
 
@@ -61,8 +57,9 @@ app.put("/repositories/:id", (request, response) => {
     title,
     url,
     techs,
-    likes: oldRepositoryData.likes,
+    likes: repositories[repositoryIndex].likes,
   };
+  
   repositories[repositoryIndex] = repository;
 
   return response.json(repository);
@@ -70,43 +67,41 @@ app.put("/repositories/:id", (request, response) => {
 
 app.delete("/repositories/:id", (request, response) => {
   const { id } = request.params;
+
   const repositoryIndex = repositories.findIndex(
     (repository) => repository.id === id
   );
 
-  if (repositoryIndex < 0)
+  if (repositoryIndex < 0) {
     return response.status(400).json({ error: "Project not found" });
+  }
 
   repositories.splice(repositoryIndex, 1);
 
-  return response.status(204);
+  return response.status(204).send();
 });
 
-app.put("/repositories/:id/like", (request, response) => {
-  // TODO
+app.post("/repositories/:id/like", (request, response) => {
   const { id } = request.params;
-  const { likes } = request.body;
 
   const repositoryIndex = repositories.findIndex(
-    (repository) => repository.id === id
-  );
-
-  const oldRepositoryData = repositories.find(
     (repository) => repository.id === id
   );
 
   if (repositoryIndex < 0)
     return response.status(400).json({ error: "Project not found" });
 
+  const likes = repositories[repositoryIndex].likes + 1;
+
   const repository = {
-    id: id,
-    title: oldRepositoryData.title,
-    url: oldRepositoryData.url,
-    techs: oldRepositoryData.techs,
-    likes: likes,
+    id,
+    title: repositories[repositoryIndex].title,
+    url: repositories[repositoryIndex].url,
+    techs: repositories[repositoryIndex].techs,
+    likes,
   };
 
-  repositories[reposFitoryIndex] = repository;
+  repositories[repositoryIndex] = repository;
 
   return response.json(repository);
 });
